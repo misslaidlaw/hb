@@ -195,3 +195,32 @@ add_action(
     "disable_checkout_button_if_meals_exceed",
     1
 );
+}
+
+function apply_coupon() {
+    $coupon_code = $_POST['coupon_code'];
+    
+    if ( WC()->cart->has_discount( $coupon_code ) ) {
+        wp_send_json_success();
+    } else {
+        if ( WC()->cart->add_discount( $coupon_code ) ) {
+            wp_send_json_success();
+        } else {
+            wp_send_json_error();
+        }
+    }
+}
+add_action('wp_ajax_apply_coupon', 'apply_coupon');
+add_action('wp_ajax_nopriv_apply_coupon', 'apply_coupon');
+
+// check the cart count and show the coupon form
+
+function check_cart_item_count() {
+  $cart_total_items = WC()->cart->get_cart_contents_count();
+  $show_coupon_form = $cart_total_items >= 7 ? true : false;
+  echo json_encode(['show_coupon_form' => $show_coupon_form]);
+  die();
+}
+
+add_action('wp_ajax_check_cart_item_count', 'check_cart_item_count'); 
+add_action('wp_ajax_nopriv_check_cart_item_count', 'check_cart_item_count');
